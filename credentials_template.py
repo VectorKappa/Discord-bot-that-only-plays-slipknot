@@ -1,0 +1,2 @@
+def getToken():
+    return "YourBotToken"
