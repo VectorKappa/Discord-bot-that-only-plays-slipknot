@@ -23,7 +23,8 @@ ytdl_options = {
     'no_warnings': True,
     'default_search': 'auto',
     # bind to ipv4 since ipv6 addresses cause issues sometimes
-    'source_address': '0.0.0.0'
+    'source_address': '0.0.0.0',
+    'cachedir': False
 }
 
 ffmpeg_options = {
@@ -54,7 +55,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
-
 class music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -69,26 +69,20 @@ class music(commands.Cog):
     async def play(self, ctx, *, url):
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop)
-            ctx.voice_client.play(player, after=lambda e: print(
-                'Player error: %s' % e) if e else None)
-
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         await ctx.send('Now playing: {}'.format(player.title))
 
     @commands.command(aliases=['live'])
     async def stream(self, ctx, *, url):
-
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-            ctx.voice_client.play(player, after=lambda e: print(
-                'Player error: %s' % e) if e else None)
-
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         await ctx.send('Now streaming: {}'.format(player.title))
 
     @commands.command(aliases=['vol'])
     async def volume(self, ctx, volume: int):
         if ctx.voice_client is None:
             return await ctx.send("Not connected to any channel")
-
         ctx.voice_client.source.volume = volume / 100
         await ctx.send("Changed volume to {}%".format(volume))
 
@@ -103,7 +97,6 @@ class music(commands.Cog):
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
             else:
-                # blad_dolaczania
                 await ctx.send("You're not connected to any channel.")
                 raise commands.CommandError("Message author is not connected to any channel.")
         elif ctx.voice_client.is_playing():
@@ -119,8 +112,7 @@ class logger(commands.Cog):
         if ctx.author == bot.user:
             return
         else:
-            print(
-                f"[{datetime.datetime.now()}]  {ctx.author} sent {ctx.content} on {ctx.channel}")
+            print(f"[{datetime.datetime.now()}]  {ctx.author} sent {ctx.content} on {ctx.channel} in {ctx.guild}")
 
 
 class maintenance(commands.Cog):
@@ -137,14 +129,20 @@ class maintenance(commands.Cog):
         await asyncio.sleep(int(time))
         await ctx.author.send(f"I'm reminding you about {message}")
 
+    @commands.command()
+    async def potato(self, ctx):
+
+        number = ord("char")
+
+        char = chr(0x63)
 
     @commands.command()
     async def ping(self, ctx):
         await ctx.send(f"Pong! {int(bot.latency*1000)}ms")
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("&"),
-                   description=None, help_command=None)
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("&"), description=None, help_command=None)
+
 
 @bot.event
 async def on_ready():
